@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import worker from "../worker.js";
 
-const report = { readings: [["2026-11-21T13:45:00Z", 0.35]], runs: [] };
+const importTime = "2026-11-21T14:15:00Z";
+const report = {
+  last_import: importTime,
+  readings: [["2026-11-21T13:45:00Z", 0.35]],
+  runs: [{ at: importTime, received: 1, added: 1, revised: 0, unchanged: 0, rejected: 0, reasons: {} }],
+};
 const request = new Request("https://river.artemislab.co.uk/snapshot.json");
 const backup = { ASSETS: { fetch: async () => Response.json(report) } };
 
@@ -23,6 +28,24 @@ test("failed and invalid report responses use the dated backup", async (t) => {
     const response = await worker.fetch(request, backup);
     assert.equal(response.headers.get("X-River-Snapshot"), "backup");
     assert.equal(response.headers.get("Cache-Control"), "no-store");
+    assert.deepEqual(await response.json(), report);
+    mocked.mock.restore();
+  }
+});
+
+test("malformed reading rows or import history use the dated backup", async (t) => {
+  const invalidReports = [
+    { ...report, readings: [["invalid date", 0.35]] },
+    { ...report, readings: [[report.readings[0][0], "0.35"]] },
+    { ...report, readings: [...report.readings, ...report.readings] },
+    { ...report, last_import: null },
+    { ...report, runs: [] },
+    { ...report, runs: [{ ...report.runs[0], reasons: null }] },
+  ];
+  for (const invalid of invalidReports) {
+    const mocked = t.mock.method(globalThis, "fetch", async () => Response.json(invalid));
+    const response = await worker.fetch(request, backup);
+    assert.equal(response.headers.get("X-River-Snapshot"), "backup");
     assert.deepEqual(await response.json(), report);
     mocked.mock.restore();
   }
