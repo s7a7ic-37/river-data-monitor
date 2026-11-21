@@ -4,6 +4,8 @@ Water height at Causey Bridge on Sankey Brook in Warrington, with a record of wh
 
 [Open the dashboard](https://river.artemislab.co.uk/)
 
+Download the chart's selected range as CSV. The file records the original heights in metres and observation times in UTC. The chart shows times in the UK time zone.
+
 Python reads the latest 72 hours from the Environment Agency API. DuckDB merges on the UTC reading time, so replayed readings leave one row per timestamp and provider corrections replace the stored height. An invalid row is counted by reason. If the whole batch fails, the log records the failure and the previous readings are kept.
 
 GitHub Actions checks the feed every two hours and publishes the JSON report to the data branch. The dashboard is served as static files on Cloudflare. Its report route serves a dated backup if the latest report cannot load. A successful check and a recently measured reading are separate things: the provider can deliver readings in batches.

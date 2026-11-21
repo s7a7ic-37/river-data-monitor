@@ -66,6 +66,7 @@ h1 { font: 500 clamp(2.65rem, 7.5vw, 5.15rem)/1.02 Georgia, serif; letter-spacin
 .water-line { stroke: var(--water); stroke-linejoin: round; stroke-linecap: round; stroke-width: 2.2; }
 .chart-clock { margin: .3rem 0 0 3rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .35rem 1rem; }
 .range-note { font-size: .86rem; margin-top: .85rem; }
+.reading-download { display: inline-flex; align-items: center; min-height: 44px; font-size: .875rem; font-weight: 680; }
 
 .counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin-top: 1rem; }
 .counts div { background: var(--wash); border-radius: .4rem; padding: .7rem .75rem; }

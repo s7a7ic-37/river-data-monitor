@@ -6,6 +6,7 @@ const time = new Intl.DateTimeFormat("en-GB", {
 const hour = 60 * 60 * 1000;
 const rangeButtons = [...document.querySelectorAll("[data-hours]")];
 const status = byId("feed-status");
+const download = byId("reading-download");
 
 function showStatus(message, attention = false) {
   status.textContent = message;
@@ -39,6 +40,12 @@ function drawChart(readings, hours) {
   byId("range-end").textContent = time.format(end);
   byId("range-note").textContent = points.length + " readings in this range. Gaps show missing readings.";
   rangeButtons.forEach((button) => button.setAttribute("aria-pressed", String(Number(button.dataset.hours) === hours)));
+
+  const rows = points.map(([at, metres]) => new Date(at).toISOString() + "," + metres);
+  const csv = new Blob(["observed_at_utc,height_m\r\n", rows.join("\r\n"), "\r\n"], { type: "text/csv;charset=utf-8" });
+  if (download.hasAttribute("href")) URL.revokeObjectURL(download.href);
+  download.href = URL.createObjectURL(csv);
+  download.download = "causey-bridge-" + hours + "h-" + new Date(end).toISOString().slice(0, 10) + ".csv";
 }
 
 function showImports(runs) {
