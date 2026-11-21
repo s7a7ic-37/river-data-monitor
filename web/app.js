@@ -4,6 +4,7 @@ const time = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/London", timeZoneName: "short",
 });
 const hour = 60 * 60 * 1000;
+const sampleInterval = hour / 4;
 const rangeButtons = [...document.querySelectorAll("[data-hours]")];
 const status = byId("feed-status");
 const download = byId("reading-download");
@@ -22,24 +23,50 @@ function drawChart(readings, hours) {
   const heights = points.map(([, metres]) => metres);
   const low = Math.min(...heights) - .005;
   const high = Math.max(...heights) + .005;
+  const chartX = at => (4 + (at - start) * 712 / (end - start)).toFixed(1);
   byId("levels").replaceChildren(...[high, (high + low) / 2, low].map((level) => {
     const label = document.createElement("span");
     label.textContent = level.toFixed(3);
     return label;
   }));
+  let gaps = 0;
   const path = points.map(([at, metres], index) => {
-    const x = 4 + (at - start) * 712 / (end - start);
     const y = 168 - (metres - low) * 156 / (high - low);
-    const connect = index > 0 && at - points[index - 1][0] <= 45 * 60 * 1000;
-    return (connect ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1) + (connect ? "" : "h.1");
+    const connect = index > 0 && at - points[index - 1][0] <= sampleInterval;
+    if (index > 0 && !connect) gaps += 1;
+    return (connect ? "L" : "M") + chartX(at) + " " + y.toFixed(1) + (connect ? "" : "h.1");
   }).join(" ");
   byId("water-line").setAttribute("d", path);
   byId("chart").setAttribute("aria-label", "Gauge height, " + heights.at(-1).toFixed(3) +
     " metres at the latest reading. See recent measurements for values.");
   byId("range-start").textContent = time.format(start);
   byId("range-end").textContent = time.format(end);
-  byId("range-note").textContent = points.length + " readings in this range. Gaps show missing readings.";
+  byId("range-note").textContent = points.length + (points.length === 1 ? " reading" : " readings") +
+    " · " + gaps + (gaps === 1 ? " gap" : " gaps") + " over 15 minutes.";
   rangeButtons.forEach((button) => button.setAttribute("aria-pressed", String(Number(button.dataset.hours) === hours)));
+
+  const slider = byId("reading-index");
+  const guide = byId("reading-guide");
+  const previous = byId("reading-prev");
+  const next = byId("reading-next");
+  slider.max = points.length - 1;
+  slider.value = slider.max;
+  slider.disabled = points.length === 1;
+  function showReading() {
+    const index = slider.valueAsNumber;
+    const [at, metres] = points[index];
+    const label = time.format(at) + " · " + metres.toFixed(3) + " m";
+    byId("reading-value").textContent = label;
+    slider.setAttribute("aria-valuetext", label);
+    guide.setAttribute("x1", chartX(at));
+    guide.setAttribute("x2", chartX(at));
+    previous.disabled = index === 0;
+    next.disabled = index === points.length - 1;
+  }
+  slider.oninput = showReading;
+  previous.onclick = () => { slider.stepDown(); showReading(); };
+  next.onclick = () => { slider.stepUp(); showReading(); };
+  showReading();
 
   const rows = points.map(([at, metres]) => new Date(at).toISOString() + "," + metres);
   const csv = new Blob(["observed_at_utc,height_m\r\n", rows.join("\r\n"), "\r\n"], { type: "text/csv;charset=utf-8" });

@@ -50,11 +50,21 @@
             <svg id="chart" role="img" viewBox="0 0 720 180" preserveAspectRatio="none">
               <path class="grid-lines" d="M0 12H720 M0 90H720 M0 168H720"></path>
               <path id="water-line" class="water-line"></path>
+              <line id="reading-guide" class="reading-guide" y1="12" y2="168"></line>
             </svg>
           </div>
           <div class="chart-clock" aria-hidden="true"><span id="range-start"></span><span id="range-end"></span></div>
         </div>
         <p class="range-note" id="range-note" aria-live="polite"></p>
+        <div class="reading-inspector">
+          <label for="reading-index">Inspect a reading</label>
+          <span id="reading-value"></span>
+          <div class="reading-picker">
+            <button id="reading-prev" type="button" aria-label="Previous reading">←</button>
+            <input id="reading-index" type="range" min="0" max="0" value="0">
+            <button id="reading-next" type="button" aria-label="Next reading">→</button>
+          </div>
+        </div>
         <a id="reading-download" class="reading-download" download>Download readings (CSV)</a>
         <details class="reading-list">
           <summary>Recent measurements</summary>

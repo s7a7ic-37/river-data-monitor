@@ -61,11 +61,19 @@ h1 { font: 500 clamp(2.65rem, 7.5vw, 5.15rem)/1.02 Georgia, serif; letter-spacin
 .chart-body svg { width: 100%; height: clamp(9rem, 19vw, 13rem); display: block; overflow: visible; }
 .levels { display: flex; flex-direction: column; justify-content: space-between; padding-block: .45rem; }
 .levels, .chart-clock { color: var(--muted); font: .75rem/1.2 ui-monospace, Consolas, monospace; }
-.grid-lines, .water-line { fill: none; vector-effect: non-scaling-stroke; }
+.grid-lines, .water-line, .reading-guide { fill: none; vector-effect: non-scaling-stroke; }
 .grid-lines { stroke: var(--line); stroke-width: 1; }
 .water-line { stroke: var(--water); stroke-linejoin: round; stroke-linecap: round; stroke-width: 2.2; }
+.reading-guide { stroke: var(--water); stroke-width: 1; stroke-dasharray: 3 2; }
 .chart-clock { margin: .3rem 0 0 3rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .35rem 1rem; }
 .range-note { font-size: .86rem; margin-top: .85rem; }
+.reading-inspector { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem .75rem; margin-top: 1rem; font-size: .875rem; }
+.reading-inspector label { font-weight: 650; }
+.reading-inspector span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.reading-picker { flex-basis: 100%; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: .5rem; }
+.reading-picker button { min-height: 44px; border: 1px solid var(--line); border-radius: .4rem; color: var(--water); background: transparent; font: inherit; cursor: pointer; }
+.reading-picker button:disabled { color: var(--muted); opacity: .65; cursor: default; }
+.reading-inspector input { width: 100%; min-height: 44px; margin: 0; accent-color: var(--water); }
 .reading-download { display: inline-flex; align-items: center; min-height: 44px; font-size: .875rem; font-weight: 680; }
 
 .counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin-top: 1rem; }
