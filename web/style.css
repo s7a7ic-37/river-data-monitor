@@ -67,6 +67,10 @@ h1 { font: 500 clamp(2.65rem, 7.5vw, 5.15rem)/1.02 Georgia, serif; letter-spacin
 .reading-guide { stroke: var(--water); stroke-width: 1; stroke-dasharray: 3 2; }
 .chart-clock { margin: .3rem 0 0 3rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: .35rem 1rem; }
 .range-note { font-size: .86rem; margin-top: .85rem; }
+.reading-gaps { margin-top: .5rem; }
+.reading-gaps ul { list-style: none; padding: 0; margin: 0; font-size: .85rem; }
+.reading-gaps li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem .75rem; border-top: 1px solid var(--line); padding-block: .5rem; }
+.reading-gaps time { white-space: nowrap; }
 .reading-inspector { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem .75rem; margin-top: 1rem; font-size: .875rem; }
 .reading-inspector label { font-weight: 650; }
 .reading-inspector span { color: var(--muted); font-variant-numeric: tabular-nums; }

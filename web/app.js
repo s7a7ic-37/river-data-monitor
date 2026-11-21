@@ -1,10 +1,13 @@
 const byId = (id) => document.getElementById(id);
-const time = new Intl.DateTimeFormat("en-GB", {
+const timeOptions = {
   day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
   timeZone: "Europe/London", timeZoneName: "short",
-});
-const hour = 60 * 60 * 1000;
-const sampleInterval = hour / 4;
+};
+const time = new Intl.DateTimeFormat("en-GB", timeOptions);
+const timeWithSeconds = new Intl.DateTimeFormat("en-GB", { ...timeOptions, second: "2-digit" });
+const minute = 60_000;
+const hour = 60 * minute;
+const sampleInterval = 15 * minute;
 const rangeButtons = [...document.querySelectorAll("[data-hours]")];
 const status = byId("feed-status");
 const download = byId("reading-download");
@@ -12,6 +15,32 @@ const download = byId("reading-download");
 function showStatus(message, attention = false) {
   status.textContent = message;
   status.toggleAttribute("data-attention", attention);
+}
+
+function elapsedLabel(elapsed) {
+  const hours = Math.floor(elapsed / hour);
+  const minutes = Math.floor(elapsed % hour / minute);
+  const seconds = elapsed % minute / 1000;
+  return [hours && hours + " h", minutes && minutes + " min", seconds && seconds + " s"].filter(Boolean).join(" ");
+}
+
+function showGaps(gaps) {
+  byId("reading-gaps").hidden = gaps.length === 0;
+  byId("gap-rows").replaceChildren(...gaps.map(([before, after]) => {
+    const label = document.createElement("span");
+    const [start, end] = [before, after].map(at => {
+      const observation = document.createElement("time");
+      observation.dateTime = new Date(at).toISOString();
+      observation.textContent = (at % minute ? timeWithSeconds : time).format(at);
+      return observation;
+    });
+    label.append(start, " to ", end);
+    const elapsed = document.createElement("strong");
+    elapsed.textContent = elapsedLabel(after - before);
+    const row = document.createElement("li");
+    row.append(label, elapsed);
+    return row;
+  }));
 }
 
 function drawChart(readings, hours) {
@@ -29,11 +58,11 @@ function drawChart(readings, hours) {
     label.textContent = level.toFixed(3);
     return label;
   }));
-  let gaps = 0;
+  const gaps = [];
   const path = points.map(([at, metres], index) => {
     const y = 168 - (metres - low) * 156 / (high - low);
     const connect = index > 0 && at - points[index - 1][0] <= sampleInterval;
-    if (index > 0 && !connect) gaps += 1;
+    if (index > 0 && !connect) gaps.push([points[index - 1][0], at]);
     return (connect ? "L" : "M") + chartX(at) + " " + y.toFixed(1) + (connect ? "" : "h.1");
   }).join(" ");
   byId("water-line").setAttribute("d", path);
@@ -42,7 +71,8 @@ function drawChart(readings, hours) {
   byId("range-start").textContent = time.format(start);
   byId("range-end").textContent = time.format(end);
   byId("range-note").textContent = points.length + (points.length === 1 ? " reading" : " readings") +
-    " · " + gaps + (gaps === 1 ? " gap" : " gaps") + " over 15 minutes.";
+    " · " + gaps.length + (gaps.length === 1 ? " gap" : " gaps") + " over 15 minutes.";
+  showGaps(gaps);
   rangeButtons.forEach((button) => button.setAttribute("aria-pressed", String(Number(button.dataset.hours) === hours)));
 
   const slider = byId("reading-index");

@@ -4,7 +4,7 @@ Water height at Causey Bridge on Sankey Brook in Warrington, with a record of wh
 
 [Open the dashboard](https://river.artemislab.co.uk/)
 
-The gauge records a reading every 15 minutes. The chart breaks its line whenever consecutive published observation times are more than 15 minutes apart, measured in UTC. The slider and step buttons select an actual reading within the chosen range and show its time and height. The CSV contains those same readings with the original precision and times in UTC. The chart and slider show times in the UK time zone.
+The gauge records a reading every 15 minutes. The chart breaks its line whenever consecutive published observation times are more than 15 minutes apart, measured in UTC. Open Reading gaps to see the observations on either side and the elapsed time. The slider and step buttons select an actual reading within the chosen range and show its time and height. The CSV contains those same readings with the original precision and times in UTC. The dashboard displays times in the UK time zone.
 
 Python reads the latest 72 hours from the Environment Agency API. DuckDB merges on the UTC reading time, so replayed readings leave one row per timestamp and provider corrections replace the stored height. An invalid row is counted by reason. If the whole batch fails, the log records the failure and the previous readings are kept.
 
