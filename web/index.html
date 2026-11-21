@@ -30,7 +30,10 @@
         <dd id="measured-at" class="measured"></dd>
       </dl>
     </section>
-    <p class="status" id="feed-status" role="status">Loading gauge readings…</p>
+    <div class="feed">
+      <p class="status" id="feed-status" role="status">Loading gauge readings…</p>
+      <button id="refresh-readings" type="button" hidden>Refresh readings</button>
+    </div>
     <noscript><p>Enable JavaScript to view the gauge readings and import log.</p></noscript>
     <div class="reading-panels" id="report" hidden>
       <section class="panel readings" aria-labelledby="readings-heading">

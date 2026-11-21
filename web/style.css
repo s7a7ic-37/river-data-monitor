@@ -46,7 +46,8 @@ h1 { font: 500 clamp(2.65rem, 7.5vw, 5.15rem)/1.02 Georgia, serif; letter-spacin
 .latest dt { font-weight: 650; }
 #height { font-size: clamp(2rem, 5vw, 3.15rem); font-weight: 720; font-variant-numeric: tabular-nums; line-height: 1.1; letter-spacing: -.055em; margin-block: .2rem; }
 .measured { white-space: nowrap; font-size: .9rem; }
-.status { padding: .8rem 1rem; border-left: 3px solid var(--water); background: var(--wash); color: var(--ink); line-height: 1.5; }
+.feed { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; }
+.status { flex: 1 1 16rem; padding: .8rem 1rem; border-left: 3px solid var(--water); background: var(--wash); color: var(--ink); line-height: 1.5; }
 .status[data-attention] { border-left-color: var(--warn); color: var(--warn); }
 
 .reading-panels { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 1rem; margin-top: 1rem; align-items: start; }
@@ -55,7 +56,9 @@ h1 { font: 500 clamp(2.65rem, 7.5vw, 5.15rem)/1.02 Georgia, serif; letter-spacin
 .panel-heading { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: end; gap: .65rem; }
 .panel-heading p, .import-time { font-size: .9rem; margin-top: .3rem; }
 .range { display: flex; gap: .35rem; }
-.range button { min-height: 44px; padding: .45rem .7rem; border: 1px solid var(--line); border-radius: .4rem; color: var(--ink); background: transparent; font: inherit; cursor: pointer; }
+.range button, #refresh-readings { min-height: 44px; padding: .45rem .7rem; border: 1px solid var(--line); border-radius: .4rem; color: var(--ink); background: transparent; font: inherit; cursor: pointer; }
+#refresh-readings { border-color: var(--water); color: var(--water); font-weight: 650; }
+#refresh-readings[aria-disabled="true"] { cursor: wait; }
 .range [aria-pressed="true"] { border-color: var(--water); background: var(--wash); color: var(--water); font-weight: 700; }
 .chart-body { margin-top: 1.25rem; display: grid; grid-template-columns: 3rem minmax(0, 1fr); }
 .chart-body svg { width: 100%; height: clamp(9rem, 19vw, 13rem); display: block; overflow: visible; }

@@ -8,7 +8,7 @@ The gauge records a reading every 15 minutes. The chart breaks its line whenever
 
 Python reads the latest 72 hours from the Environment Agency API. DuckDB merges on the UTC reading time, so replayed readings leave one row per timestamp and provider corrections replace the stored height. An invalid row is counted by reason. If the whole batch fails, the log records the failure and the previous readings are kept.
 
-GitHub Actions is scheduled to check the feed every two hours and publish the JSON report to the data branch. The dashboard shows when a check actually ran and when the latest reading was measured. The provider can deliver readings in batches. Cloudflare serves a dated backup if the latest report cannot load.
+GitHub Actions is scheduled to check the feed every two hours and publish the JSON report to the data branch. The dashboard shows when a check actually ran and when the latest reading was measured. The provider can deliver readings in batches. Cloudflare serves a dated backup if the latest report cannot load. Refresh readings checks the published report again and keeps the selected range. If the check fails, the readings already on the page remain available.
 
 ## Run locally
 

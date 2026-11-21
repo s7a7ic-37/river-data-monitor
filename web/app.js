@@ -11,6 +11,9 @@ const sampleInterval = 15 * minute;
 const rangeButtons = [...document.querySelectorAll("[data-hours]")];
 const status = byId("feed-status");
 const download = byId("reading-download");
+const refreshButton = byId("refresh-readings");
+let currentSnapshot;
+let selectedHours = 24;
 
 function showStatus(message, attention = false) {
   status.textContent = message;
@@ -109,15 +112,17 @@ function drawChart(readings, hours) {
 
 function showImports(runs) {
   const latest = runs[0];
+  byId("reject-reasons").replaceChildren();
+  byId("import-rows").replaceChildren();
+  byId("reject-reasons").hidden = !latest?.rejected;
+  byId("last-import").textContent = latest ? time.format(new Date(latest.at)) + " · " + latest.received + " rows received" : "";
+  for (const field of ["added", "revised", "unchanged", "rejected"]) byId(field).textContent = latest?.[field] ?? "—";
   if (!latest) return;
-  byId("last-import").textContent = time.format(new Date(latest.at)) + " · " + latest.received + " rows received";
-  for (const field of ["added", "revised", "unchanged", "rejected"]) byId(field).textContent = latest[field];
   for (const [reason, count] of Object.entries(latest.reasons)) {
     const item = document.createElement("li");
     item.textContent = reason + " · " + count;
     byId("reject-reasons").append(item);
   }
-  byId("reject-reasons").hidden = latest.rejected === 0;
   for (const run of runs) {
     const item = document.createElement("li");
     const title = document.createElement("div");
@@ -139,30 +144,26 @@ function showImports(runs) {
   }
 }
 
-try {
-  const response = await fetch("/snapshot.json", { signal: AbortSignal.timeout(12_000) });
-  if (!response.ok) throw new Error("Snapshot unavailable");
-  const snapshot = await response.json();
+function showSnapshot(snapshot, backup) {
   const { readings, runs } = snapshot;
   const latest = readings.at(-1);
+  document.querySelector(".readings").hidden = !latest;
   if (latest) {
     byId("height").textContent = latest[1].toFixed(3) + " m";
     byId("measured-at").textContent = time.format(new Date(latest[0]));
-    drawChart(readings, 24);
-    rangeButtons.forEach((button) => button.addEventListener("click", () => drawChart(readings, Number(button.dataset.hours))));
+    drawChart(readings, selectedHours);
+    byId("reading-rows").replaceChildren();
     for (const [at, metres] of readings.slice(-12).reverse()) {
       const row = byId("reading-rows").insertRow();
       row.insertCell().textContent = time.format(new Date(at));
       row.insertCell().textContent = metres.toFixed(3);
     }
-  } else {
-    document.querySelector(".readings").hidden = true;
   }
   showImports(runs);
   byId("report").hidden = false;
 
   const lastImport = snapshot.last_import ? " Last good import " + time.format(new Date(snapshot.last_import)) + "." : "";
-  if (response.headers.get("X-River-Snapshot") === "backup") {
+  if (backup) {
     showStatus("Showing the backup snapshot because the latest report could not be loaded." + lastImport, true);
   } else if (runs[0]?.error || !latest) {
     showStatus((runs[0]?.error || "No readings have been imported yet.") + lastImport, true);
@@ -173,6 +174,41 @@ try {
   } else {
     showStatus("Latest successful import " + time.format(new Date(snapshot.last_import)) + ".");
   }
-} catch {
-  showStatus("The readings could not be loaded. Refresh this page to try again.", true);
 }
+
+async function refreshReadings() {
+  if (refreshButton.getAttribute("aria-disabled") === "true") return;
+  refreshButton.setAttribute("aria-disabled", "true");
+  if (currentSnapshot) showStatus("Checking for new readings…");
+  const displayed = currentSnapshot?.readings.at(-1);
+  try {
+    const response = await fetch("/snapshot.json", { cache: "no-cache", signal: AbortSignal.timeout(12_000) });
+    if (!response.ok) throw new Error("Snapshot unavailable");
+    const snapshot = await response.json();
+    const { readings, runs } = snapshot;
+    if (!Array.isArray(readings) || !Array.isArray(runs)) throw new Error("Snapshot unavailable");
+    const latest = readings.at(-1);
+    const backup = response.headers.get("X-River-Snapshot") === "backup";
+    if (displayed && (backup || !latest || Date.parse(latest[0]) < Date.parse(displayed[0]) ||
+        Date.parse(snapshot.last_import) < Date.parse(currentSnapshot.last_import))) {
+      showStatus("A newer report could not be loaded. Showing the readings already on this page.", true);
+      return;
+    }
+    showSnapshot(snapshot, backup);
+    currentSnapshot = snapshot;
+  } catch {
+    showStatus(displayed ? "Refresh failed. Showing the readings already on this page." : "The readings could not be loaded. Try refreshing again.", true);
+  } finally {
+    refreshButton.removeAttribute("aria-disabled");
+  }
+}
+
+for (const button of rangeButtons) {
+  button.addEventListener("click", () => {
+    selectedHours = Number(button.dataset.hours);
+    drawChart(currentSnapshot.readings, selectedHours);
+  });
+}
+refreshButton.addEventListener("click", refreshReadings);
+refreshButton.hidden = false;
+refreshReadings();
