@@ -1,0 +1,8 @@
+.venv/
+.env
+.env.*
+__pycache__/
+.wrangler/
+node_modules/
+web/snapshot.json
+*.tmp

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="River levels from an Environment Agency gauge in Warrington, with an import and data quality log.">
+  <title>River Data Monitor</title>
+  <script src="/theme.js"></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-line">
+      <a class="brand" href="/"><img src="/favicon.svg" alt="" width="30" height="30">River Data Monitor</a>
+      <a class="projects-link" href="https://portfolio.artemislab.co.uk/#projects">← All projects</a>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="station" aria-labelledby="station-name">
+      <div>
+        <p class="station-location">Causey Bridge, Warrington</p>
+        <h1 id="station-name">Sankey Brook</h1>
+        <p class="station-note">Water height measured at the gauge.</p>
+      </div>
+      <dl class="latest">
+        <dt>Latest reading</dt>
+        <dd id="height">—</dd>
+        <dd id="measured-at" class="measured"></dd>
+      </dl>
+    </section>
+    <p class="status" id="feed-status" role="status">Loading gauge readings…</p>
+    <noscript><p>Enable JavaScript to view the gauge readings and import log.</p></noscript>
+    <div class="reading-panels" id="report" hidden>
+      <section class="panel readings" aria-labelledby="readings-heading">
+        <div class="panel-heading">
+          <div>
+            <h2 id="readings-heading">Water height</h2>
+            <p>Metres · UK time</p>
+          </div>
+          <div class="range" role="group" aria-label="Reading range">
+            <button type="button" data-hours="24" aria-pressed="true">24 hours</button>
+            <button type="button" data-hours="72" aria-pressed="false">3 days</button>
+          </div>
+        </div>
+        <div id="chart-visual">
+          <div class="chart-body">
+            <div id="levels" class="levels" aria-hidden="true"></div>
+            <svg id="chart" role="img" viewBox="0 0 720 180" preserveAspectRatio="none">
+              <path class="grid-lines" d="M0 12H720 M0 90H720 M0 168H720"></path>
+              <path id="water-line" class="water-line"></path>
+            </svg>
+          </div>
+          <div class="chart-clock" aria-hidden="true"><span id="range-start"></span><span id="range-end"></span></div>
+        </div>
+        <p class="range-note" id="range-note" aria-live="polite"></p>
+        <details class="reading-list">
+          <summary>Recent measurements</summary>
+          <table>
+            <thead><tr><th scope="col">Measured at</th><th scope="col">Height (m)</th></tr></thead>
+            <tbody id="reading-rows"></tbody>
+          </table>
+        </details>
+      </section>
+      <section class="panel imports" aria-labelledby="import-heading">
+        <h2 id="import-heading">Latest import check</h2>
+        <p class="import-time" id="last-import"></p>
+        <dl class="counts">
+          <div><dt>New</dt><dd id="added">—</dd></div>
+          <div><dt>Revised</dt><dd id="revised">—</dd></div>
+          <div><dt>Unchanged</dt><dd id="unchanged">—</dd></div>
+          <div><dt>Rejected</dt><dd id="rejected">—</dd></div>
+        </dl>
+        <ul id="reject-reasons" class="rejections" hidden></ul>
+        <details class="import-log">
+          <summary>Import history</summary>
+          <ol id="import-rows"></ol>
+        </details>
+      </section>
+    </div>
+  </main>
+  <footer class="wrap footer">
+    <p>This uses <a href="https://environment.data.gov.uk/flood-monitoring/doc/reference">Environment Agency flood and river level data from the real-time data API (Beta)</a>. Readings can be published in batches.</p>
+    <a href="https://github.com/s7a7ic-37/river-data-monitor">Project source ↗</a>
+  </footer>
+</body>
+</html>
