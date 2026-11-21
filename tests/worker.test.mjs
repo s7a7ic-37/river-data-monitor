@@ -51,6 +51,41 @@ test("malformed reading rows or import history use the dated backup", async (t) 
   }
 });
 
+test("import logs outside the writer's batch and history contract use the backup", async (t) => {
+  const run = report.runs[0];
+  const invalidRuns = [
+    [{ ...run, added: 20 }],
+    [{ ...run, received: 2, rejected: 1, reasons: { "Invalid gauge height": 2 } }],
+    [{ ...run, received: 401, unchanged: 400 }],
+    Array.from({ length: 9 }, () => run),
+  ];
+  for (const runs of invalidRuns) {
+    const fetch = t.mock.method(globalThis, "fetch", async () => Response.json({ ...report, runs }));
+    const response = await worker.fetch(request, backup);
+    assert.equal(response.headers.get("X-River-Snapshot"), "backup");
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+    assert.deepEqual(await response.json(), report);
+    fetch.mock.restore();
+  }
+});
+
+test("duplicate rows and failed batches retain valid complete accounting", async (t) => {
+  const run = report.runs[0];
+  const replay = {
+    ...run, received: 400, added: 1, revised: 1, unchanged: 396, rejected: 2,
+    reasons: { "Invalid gauge height": 1, "Unexpected measure": 1 },
+  };
+  const failure = {
+    ...run, at: "2026-11-21T16:27:00Z", received: 2, added: 0, rejected: 2,
+    reasons: { "Invalid gauge height": 2 }, error: "The feed returned no usable readings.",
+  };
+  const snapshot = { ...report, runs: [failure, replay, ...Array.from({ length: 6 }, () => run)] };
+  t.mock.method(globalThis, "fetch", async () => Response.json(snapshot));
+  const response = await worker.fetch(request, backup);
+  assert.equal(response.headers.get("X-River-Snapshot"), null);
+  assert.deepEqual(await response.json(), snapshot);
+});
+
 test("page assets do not fetch the report service", async (t) => {
   const mock = t.mock.method(globalThis, "fetch");
   const response = await worker.fetch(new Request("https://river.artemislab.co.uk/"), {
