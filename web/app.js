@@ -90,6 +90,8 @@ function drawChart(readings, hours) {
     slider.setAttribute("aria-valuetext", label);
     guide.setAttribute("x1", chartX(at));
     guide.setAttribute("x2", chartX(at));
+    const active = document.activeElement;
+    if ((index === 0 && active === previous) || (index === points.length - 1 && active === next)) slider.focus();
     previous.disabled = index === 0;
     next.disabled = index === points.length - 1;
   }
